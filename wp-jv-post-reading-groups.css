@@ -1,0 +1,27 @@
+div.jv-wrapper {
+	width:100%;
+}
+
+div.jv-header  {
+	width:100%;
+}
+
+div.jv-left { 
+	width:250px; 
+	float:left;
+}
+
+div.jv-right {
+	width:350px; 
+	float:left;
+}
+
+div.jv-footer {
+	width:100%; 
+	clear:both;
+}
+
+input.jv-new-reading-group-text {
+	width:98%;
+}
+
