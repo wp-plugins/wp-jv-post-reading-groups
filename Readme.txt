@@ -1,10 +1,10 @@
-﻿=== WP JV Post Reading Groups ===
-Contributors: janosver
+=== WP JV Post Reading Groups ===
+Contributors: Janos Ver
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92QJY4PGGA&lc=HU&item_name=WP%20JV%20Post%20Reading%20Groups%20%2d%20Plugin%20Donation&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
-Tested up to: 3.9.2
-Stable tag: 1.0
+Tested up to: 4.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,7 +25,11 @@ Your users will not be aware (unless you tell them) of what Reading Groups they 
 
 I have to admit that there are other plugins out there which let you setup your WordPress site like this, but this Plugin is way much simpler to setup and use than general purpose robust permission management systems.
 
-**For example** you create Friends and Family Reading Groups. Then you create some users (Mom, Dad, John, Nancy) and assign these Reading Groups as follows: Friends: John, Nancy Family: Mom, Dad When you move to London you write posts about it:
+**For example** you create Friends and Family Reading Groups. Then you create some users (Mom, Dad, John, Nancy) and assign these Reading Groups as follows: 
+Friends: John, Nancy 
+Family: Mom, Dad 
+
+When you move to London you write posts about it:
 
 * and you attach some nice pics about the city - you publish this post to general public (no magic, do it as usual)
 
@@ -63,7 +67,7 @@ When you add a New User you will be able to select Reading Groups as well.
 
 = How to assign Reading Groups to Posts? =
 
-Go to Posts -> Edit Post and select who will be able to read that post. Don't forget to publish that post privately. 
+Go to Posts -> Edit Post and select who will be able to read that post. **Don't forget to publish that post privately.**
 
 == Screenshots ==
 
@@ -74,6 +78,10 @@ Go to Posts -> Edit Post and select who will be able to read that post. Don't fo
 5. Posts -> Add New
 
 == Changelog ==
+= 1.1 =
+* Fix issue: click on a private post resulted in HTTP 404
+* Fix issue: private posts where not included in recent posts widget
+* Fix issue: "Private:" text from title was not excluded properly for languages other than English
 
 = 1.0 =
 * Initial release.
@@ -82,3 +90,8 @@ Go to Posts -> Edit Post and select who will be able to read that post. Don't fo
 
 = 1.0 =
 * Initial release
+
+= 1.1 =
+* Fix issue: click on a private post resulted in HTTP 404
+* Fix issue: private posts where not included in recent posts widget
+* Fix issue: "Private:" text from title was not excluded properly for languages other than English
