@@ -3,7 +3,7 @@
  * Plugin Name: WP JV Post Reading Groups
  * Plugin URI: http://janosver.com/projects/wordpress/wp-jv-post-reading-groups
  * Description: Grant read-only permission for selected users (with no administrator role) on selected private posts 
- * Version: 1.1
+ * Version: 1.2
  * Author: Janos Ver 
  * Author URI: http://janosver.com
  * License: GPLv2 or later
@@ -561,7 +561,7 @@ add_filter( 'manage_posts_custom_column', 'AllPostsColumnRGRows', 10, 2 );
 
 //Display private posts as well (only those for which user has permissions)
 function wp_jv_prg_posts_where_statement( $where, $wp_query = NULL ) {
-    if (is_admin()){	  
+	if (is_admin()){	  
 		return $where;
 	}
 	//Disable private posts in the feed
@@ -578,7 +578,7 @@ function wp_jv_prg_posts_where_statement( $where, $wp_query = NULL ) {
 					
 				}
 				else {
-					$where = " AND tst_posts.post_type = 'post' 
+					$where = " AND $wpdb->posts.post_type = 'post' 
 							   AND $wpdb->posts.post_status IN ('private','publish') ";
 				}
 		}
@@ -624,7 +624,7 @@ function wp_jv_prg_posts_where_statement( $where, $wp_query = NULL ) {
 					}
 					//If user has access to at least one private post
 					if (!empty($to_show)) {
-						$where = " AND tst_posts.post_type = 'post' 
+						$where = " AND $wpdb->posts.post_type = 'post' 
 								   AND ( ($wpdb->posts.ID IN (".implode(',',$to_show).") AND $wpdb->posts.post_status ='private') 
 										 OR ($wpdb->posts.post_author=$who_is_the_user AND $wpdb->posts.post_status ='publish') 
 										 OR  $wpdb->posts.post_status ='publish') ";

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
 Tested up to: 4.0
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -78,6 +78,9 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 5. Posts -> Add New
 
 == Changelog ==
+
+= 1.2 =
+* Fix issue: WP DB prefix to run on any instance
 
 = 1.1 =
 * Fix issue: click on a private post resulted in HTTP 404
