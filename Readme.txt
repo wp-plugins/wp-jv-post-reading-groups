@@ -1,4 +1,4 @@
-=== WP JV Post Reading Groups ===
+﻿=== WP JV Post Reading Groups ===
 Contributors: Janos Ver
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92QJY4PGGA&lc=HU&item_name=WP%20JV%20Post%20Reading%20Groups%20%2d%20Plugin%20Donation&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
@@ -78,6 +78,7 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 5. Posts -> Add New
 
 == Changelog ==
+
 = 1.1 =
 * Fix issue: click on a private post resulted in HTTP 404
 * Fix issue: private posts where not included in recent posts widget
