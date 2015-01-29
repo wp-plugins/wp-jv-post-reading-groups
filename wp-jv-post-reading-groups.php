@@ -3,7 +3,7 @@
  * Plugin Name: WP JV Post Reading Groups
  * Plugin URI: http://janosver.com/projects/wordpress/wp-jv-post-reading-groups
  * Description: Grant read-only permission for selected users (with no administrator role) on selected private posts 
- * Version: 1.2
+ * Version: 1.3
  * Author: Janos Ver 
  * Author URI: http://janosver.com
  * License: GPLv2 or later
@@ -40,7 +40,7 @@ function AddRGMetaBox( $post ) {
 	     _e( 'Select who can read this post<br>', 'wp_jv_prg_textdomain');
 		 
 		foreach ($wp_jv_prg_rg_settings as $key => $value) {	
-			echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
+			echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '" ';
 			if (!empty($wp_jv_post_rg) && in_array($key, $wp_jv_post_rg,true)) { echo 'checked="checked"';} 
 			echo '/>'. $wp_jv_prg_rg_settings[$key]. '<br>';
 			}
@@ -73,7 +73,7 @@ function SaveRGMetaBox( $post_id ) {
 			return;
 		}
 	}
-	
+	$NewRG=null;
 	$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
 	if (!empty($wp_jv_prg_rg_settings)) {	
 		foreach ($wp_jv_prg_rg_settings as $key => $value) {	
@@ -135,7 +135,7 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 		}	
 	}
 		
-	function display_tablenav(){
+	function display_tablenav($which){
 		//Leave it empty to remove tablenav
 	}
 	
@@ -162,9 +162,9 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 		$actions = array(
 			//Hidden input box				
 			//Edit link
-			'edit'		=> sprintf('<a class="lnkEdit" data-RG="'. $ItemKey. '" href="'. wp_nonce_url( admin_url('options-reading.php?action=edit&rg='. $ItemKey),'edit'. $ItemKey,'jv_nonce'). '">Rename</a>'),				
+			'edit'		=> sprintf('<a class="lnkEdit" data-RG="'. $ItemKey. '" href="'. wp_nonce_url( admin_url('options-reading.php?action=edit&rg='. $ItemKey),'edit'. $ItemKey,'jv_prg_nonce'). '">Rename</a>'),				
 			//Delete link
-			'delete'		=> sprintf('<a class="lnkDelete" href="'. wp_nonce_url( admin_url('options-reading.php?action=delete&rg='. $ItemKey),'delete'. $ItemKey,'jv_nonce'). '">Delete</a>')				
+			'delete'		=> sprintf('<a class="lnkDelete" href="'. wp_nonce_url( admin_url('options-reading.php?action=delete&rg='. $ItemKey),'delete'. $ItemKey,'jv_prg_nonce'). '">Delete</a>')				
 			);				
 		return sprintf('%1$s %2$s %3$s', $renamediv, $itemdiv, $this->row_actions( $actions ));			
 	}
@@ -174,7 +174,7 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 
 
 //Initialize js methods
-function LoadJSMethods() {
+function JVPRGLoadJSMethods() {
    wp_register_script( 'wp_jv_prg_script', plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.js', array('jquery') );
    wp_register_style( 'wp_jv_rg_styles',plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.css');
    //Make sure we can use jQuery
@@ -186,9 +186,9 @@ function LoadJSMethods() {
    wp_enqueue_style('wp_jv_rg_styles');
    //Improve security
    $nonce_array = array( 'wp_jv_rg_nonce' =>  wp_create_nonce ('wp_jv_rg_nonce') );
-   wp_localize_script( 'wp_jv_prg_script', 'wp_jv_obj', $nonce_array );
+   wp_localize_script( 'wp_jv_prg_script', 'wp_jv_prg_obj', $nonce_array );
 }
-add_action( 'init', 'LoadJSMethods' );
+add_action( 'init', 'JVPRGLoadJSMethods' );
 
 
 //Refresh WP-List-Table (AJAX call handler)
@@ -307,7 +307,7 @@ function DeleteRG() {
     //Check if we are getting hacked
 	$url=parse_url($_POST['delurl']);
 	parse_str($url['query'],$params);
-	if (empty($params['action']) || ( empty($params['rg']) && $params['rg'] !=0 ) || empty($params['jv_nonce']) || !wp_verify_nonce($params['jv_nonce'],'delete'. $params['rg'])) {
+	if (empty($params['action']) || ( empty($params['rg']) && $params['rg'] !=0 ) || empty($params['jv_prg_nonce']) || !wp_verify_nonce($params['jv_prg_nonce'],'delete'. $params['rg'])) {
 		$result=array('error'=> true,
 					  'error_msg'  => 'Something went wrong.',
 					  'error_code' => 'F-04'
@@ -425,30 +425,35 @@ function RGUserProfile($user) {
 	echo '<div class="jv-header">';
 	echo '<h3>WP JV Reading Groups</h3>';	
 	echo '</div>'; //jv-header end
-
+	
 	echo '<div class="jv-content">';	
 	
-	if ( user_can($user->id, 'edit_users' ) ) { 
-		echo 'Administrators access all posts.<br>'; 
-		
-	}
-	else {
-		echo 'Grant permissions for the following Reading Group(s)<br>';
-		
-		//Get all available RGs from database
-		$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
-		//Get current user's permissions
-		$wp_jv_user_rg=get_user_meta($user->ID, 'wp_jv_user_rg',true);
+	if (!empty($user->ID)) {
+		if ( user_can($user->ID, 'edit_users' ) ) { 
+			echo 'Administrators access all posts.<br>'; 			
+		}	
+		else {		
+			echo 'Grant permissions for the following Reading Group(s)<br>';
+			
+			//Get all available RGs from database
+			$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
+			
+			$wp_jv_user_rg=null;			
+			//Get current user's permissions				
+			if (!empty($user->ID)) {
+				$wp_jv_user_rg=get_user_meta($user->ID, 'wp_jv_user_rg',true);
+			}
 
-		//Echo checkboxes and tick saved selections	
-		if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
-		else {
-			foreach ($wp_jv_prg_rg_settings as $key => $value) {	
-				echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
-				if (!empty($wp_jv_user_rg) && in_array($key, $wp_jv_user_rg,true)) { echo 'checked="checked"';} 
-				echo '/>'. $wp_jv_prg_rg_settings[$key]. '<br>';
-				}
-			}	
+			//Echo checkboxes and tick saved selections	
+			if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
+			else {
+				foreach ($wp_jv_prg_rg_settings as $key => $value) {	
+					echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
+					if (!empty($wp_jv_user_rg) && in_array($key, $wp_jv_user_rg,true)) { echo 'checked="checked"';} 
+					echo '/>'. $wp_jv_prg_rg_settings[$key]. '<br>';
+					}
+				}	
+		}
 	}
 	echo '</div>'; //jv-content end
 
@@ -467,20 +472,23 @@ add_action( 'edit_user_profile', 'RGUserProfile' );
 function SaveRGUserProfile( $user_id ) {
 	//Only admins can save
 	if ( !current_user_can( 'edit_users', $user_id ) ) { return; }
+	
 	$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
-	
-	if (empty($wp_jv_prg_rg_settings)) {return;} 
+		
+	if (empty($wp_jv_prg_rg_settings)) { 
+		return; 
+	} 
 	else {
+		$newRG=null;
 		foreach ($wp_jv_prg_rg_settings as $key => $value) {	
-			if (isset($_POST['wp-jv-reading-group-field-'. $key])) {$newRG[]=$key;}
+			if (isset($_POST['wp-jv-reading-group-field-'. $key])) {
+				$newRG[]=$key;
 			}
+		}
+		update_user_meta( $user_id, 'wp_jv_user_rg', $newRG );
+		//Check if new RG saved successfully
+		if ( get_user_meta($user_id,  'wp_jv_user_rg', true ) != $newRG ) {	wp_die('Something went wrong.<br>[Error: F-05] ');}		
 	}
-	
-	update_user_meta( $user_id, 'wp_jv_user_rg', $newRG );
-	
-	//Check if new RG saved successfully
-	if ( get_user_meta($user_id,  'wp_jv_user_rg', true ) != $newRG ) {	wp_die('Something went wrong.<br>[Error: F-05] ');}
-	
 }
 add_action( 'personal_options_update', 'SaveRGUserProfile' );
 add_action( 'edit_user_profile_update', 'SaveRGUserProfile' );
@@ -504,7 +512,8 @@ function AllUsersColumnRegisterRG( $columns ) {
 
 //Add rows
 function AllUsersColumnRGRows( $empty, $column_name, $user_id ) {
-    if ( 'wp_jv_prg' != $column_name ) {
+    $rg=null;
+	if ( 'wp_jv_prg' != $column_name ) {
         return $empty;
 	}
 	if (user_can($user_id,'edit_users')) {$rg='Access all RGs';}
@@ -541,6 +550,7 @@ function AllPostsColumnRGRows($column_name , $post_id ) {
         return;
 	}
 	$wp_jv_post_rg=get_post_meta($post_id,'wp_jv_post_rg',true);	
+	$rg = null;
 	if (empty($wp_jv_post_rg)) {$rg = null;} //Access only public posts
 	else {
 		$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
@@ -560,112 +570,153 @@ add_filter( 'manage_posts_custom_column', 'AllPostsColumnRGRows', 10, 2 );
 
 
 //Display private posts as well (only those for which user has permissions)
-function wp_jv_prg_posts_where_statement( $where, $wp_query = NULL ) {
-	if (is_admin()){	  
+function wp_jv_prg_posts_where_statement($where) {	
+	global $wpdb;			
+	
+	if (is_page()) {return $where;}
+	if (is_feed()) {return $where;}
+	if (is_attachment()) {return $where;}
+	
+	if (is_admin()){			
 		return $where;
 	}
-	//Disable private posts in the feed
-	if ($wp_query->is_feed) {
-		return $where;	
-	}
-    global $wpdb;		
-	if(is_user_logged_in()) {
+    
+	if(is_user_logged_in()) {		
 		$who_is_the_user=get_current_user_id(); 
-		//Display all to admins
-		if (user_can($who_is_the_user,'edit_users')) {
-			if (!strstr($where,'post_name')==false) {
-					$where .= " AND $wpdb->posts.post_status IN ('private','publish')";
-					
-				}
-				else {
-					$where = " AND $wpdb->posts.post_type = 'post' 
-							   AND $wpdb->posts.post_status IN ('private','publish') ";
-				}
-		}
-		else {
-			//sigle post
-			if (!strstr($where,'post_name')==false) {
-				$where .= " AND $wpdb->posts.post_status IN ('private','publish')";
+		// Handle categories, tags
+		if (is_archive()) {	
+			if (is_category()) {
+				$category=single_cat_title(null,false); 
+				$all_posts_in_category = get_posts(array('category_name' => $category,'post_status' =>'any','posts_per_page'=>-1));
 				
-			}
-			//multiple posts
-			else {
-				$request = "						
-				SELECT ID, 
-					   meta_value as wp_jv_post_rg, 
-					   true as limited
-				FROM $wpdb->posts, 
-					 $wpdb->postmeta
-				WHERE $wpdb->posts.ID = $wpdb->postmeta.post_id
-				AND post_status='private' AND meta_key='wp_jv_post_rg'";		
-				$all_posts = $wpdb->get_results($wpdb->prepare($request,null));
-				$to_show=array();		
-				foreach ($all_posts as $key => $value) {						
+				$to_show=array();
+				foreach ($all_posts_in_category as $key => $value) {								
+					if ((wp_jv_prg_user_can_see_a_post(get_current_user_id(), $value->ID))) {
+							$to_show[]=$value->ID;				
 							
-						//Get current user and his/her permissions
-						$current_user_permissions = get_user_meta($who_is_the_user,'wp_jv_user_rg',true);
-						
-						if (!is_array($current_user_permissions)) {
-							$current_user_permissions=str_split($current_user_permissions);
-						}
-						//if current user has any kind of permission...				
-						if ($current_user_permissions) {		
-							$post_permitted=unserialize($value->wp_jv_post_rg);
-							//Convert to array if necessary
-							if (!is_array($post_permitted)) { 
-								$post_permitted=str_split($post_permitted);
-							}							
-							//If post permissions set AND current user has appropriate permissions add this post to the list of posts to show				
-							$this_user_can_see_this_post=array_intersect($current_user_permissions, $post_permitted);
-							if (!empty($current_user_permissions) && !empty($this_user_can_see_this_post)) {				
-									$to_show[]=$value->ID;				
-							}
-						}
-					}
-					//If user has access to at least one private post
-					if (!empty($to_show)) {
-						$where = " AND $wpdb->posts.post_type = 'post' 
-								   AND ( ($wpdb->posts.ID IN (".implode(',',$to_show).") AND $wpdb->posts.post_status ='private') 
-										 OR ($wpdb->posts.post_author=$who_is_the_user AND $wpdb->posts.post_status ='publish') 
-										 OR  $wpdb->posts.post_status ='publish') ";
-					}
+						}	
+				}
+				if (!empty($to_show)) {
+					$where =" AND $wpdb->posts.post_type = 'post' AND $wpdb->posts.ID IN (". implode(',',$to_show). ")";
+				}
+				return $where;
+			}
+			else if (is_tag()) {				
+				//#TODO: finish up tags
+				return $where;			
+			}
+			else {return $where;}			
+			
+		}	
+		//Display all to admins
+		if (user_can($who_is_the_user,'edit_users')) {						
+			if (is_single()) {
+				$where .= " AND $wpdb->posts.post_status IN ('private','publish')";
+			}
+			else {					
+				$where = " AND $wpdb->posts.post_type = 'post' 
+						   AND $wpdb->posts.post_status IN ('private','publish') ";				
+			}			
+			return $where;
+		}
+		else {			
+		//sigle post
+		if (is_single()) {					
+			$where .= " AND $wpdb->posts.post_status IN ('private','publish')";
+		}
+		//multiple posts
+		else {							
+			$request = "						
+			SELECT ID, 
+				   meta_value as wp_jv_post_rg, 
+				   true as limited
+			FROM $wpdb->posts, 
+				 $wpdb->postmeta
+			WHERE $wpdb->posts.ID = $wpdb->postmeta.post_id
+			AND post_status='private' AND meta_key='wp_jv_post_rg'";		
+			$all_posts = $wpdb->get_results($request);
+			$to_show=array();
+			foreach ($all_posts as $key => $value) {
+				if ((wp_jv_prg_user_can_see_a_post(get_current_user_id(), $value->ID))) {
+					$to_show[]=$value->ID;				
+				}	
+				//If user has access to at least one private post
+				
+				if (!empty($to_show)) {					
+					$where = " AND $wpdb->posts.post_type = 'post' 
+							   AND ( ($wpdb->posts.ID IN (".implode(',',$to_show).") AND $wpdb->posts.post_status ='private') 
+									 OR ($wpdb->posts.post_author=$who_is_the_user AND $wpdb->posts.post_status ='publish') 
+									 OR  $wpdb->posts.post_status ='publish') ";
 					
-			} //End multiple post
+				}					
+			}
+		} //End multiple post
 		} //End non-admins
-	} //End change only for logged-in users
-    return $where;
+	} //End change only for logged-in users		
+	return $where;
 }
 add_filter( 'posts_where' , 'wp_jv_prg_posts_where_statement' );
 
+
 //Enable private post URLs to eligible users
-function wp_jv_prg_posts_results($posts) {
-	if(is_user_logged_in()) {
-		
-		foreach ($posts as $value) {
-			$who_is_the_user=get_current_user_id(); 
-			//Get current user and his/her permissions
-			$current_user_permissions = get_user_meta($who_is_the_user,'wp_jv_user_rg',true);
-			if (!is_array($current_user_permissions)) {
-				$current_user_permissions=str_split($current_user_permissions);
-			}
-			//if current user has any kind of permission...				
-			if ($current_user_permissions) {	
-				$post_permitted=$value->wp_jv_post_rg;
-				//Convert to array if necessary
-				if (!is_array($post_permitted)) { 
-					$post_permitted=str_split($post_permitted);
-				}							
-				//If post permissions set AND current user has appropriate permissions add this post to the list of posts to show				
-				$this_user_can_see_this_post=array_intersect($current_user_permissions, $post_permitted);
-				if (!empty($current_user_permissions) && !empty($this_user_can_see_this_post)) {	
-					$value->post_status = 'publish';
+function wp_jv_prg_posts_results($posts) {	
+	if (is_admin()){return $posts;}
+
+	if (is_archive()) {		
+		//fixing categories
+		if (is_category() && !empty($posts)) {
+			$category=single_cat_title(null,false); 			
+			foreach ($posts as $value) {
+				if (in_category($category,$value->ID))	{
+					$value->post_status = 'publish';						
 				}
 			}
 		}
+		else return $posts;
+	}
+	else {
+		//for posts only
+		if(is_user_logged_in() && !empty($posts)) {		
+			foreach ($posts as $value) {						
+				if (wp_jv_prg_user_can_see_a_post(get_current_user_id(), $value->ID))	{	
+					$value->post_status = 'publish';					
+					}
+			}
+		}	
 	}
 	return $posts;
 }  
 add_filter('posts_results', 'wp_jv_prg_posts_results');
+
+//add support for WP JV Custom Email Settings Plugin
+function wp_jv_prg_user_can_see_a_post($user_id, $post_id) {	
+	$user_can_see_a_post=false;
+	//If a post is public then anybody can see it
+	if (get_post_status($post_id)== 'publish') {$user_can_see_a_post=true;}
+	
+	//Display all to admins
+	if (user_can($user_id,'edit_users')) {$user_can_see_a_post=true;}
+	
+	//Get current user and his/her permissions
+	$user_permissions = get_user_meta($user_id,'wp_jv_user_rg',true);
+	if (!is_array($user_permissions)) {
+		$user_permissions=str_split($user_permissions);
+	}
+	//if current user has any kind of permission...				
+	if ($user_permissions) {	
+		$post_permitted=get_post($post_id)->wp_jv_post_rg;
+		//Convert to array if necessary
+		if (!is_array($post_permitted)) { 
+			$post_permitted=str_split($post_permitted);
+		}							
+		//If post permissions set AND current user has appropriate permissions add this post to the list of posts to show				
+		$this_user_can_see_this_post=array_intersect($user_permissions, $post_permitted);
+		if (!empty($user_permissions) && !empty($this_user_can_see_this_post)) {	
+			$user_can_see_a_post=true;
+		}
+	}
+	return $user_can_see_a_post;
+}
 
 
 //Remove 'Private:' text from title

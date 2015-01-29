@@ -1,6 +1,6 @@
 /*
 // Scripts for WP JV Post Reading Groups
-// @version: 1.2
+// @version: 1.3
 */
 
 jQuery(document).ready(function($){
@@ -40,7 +40,7 @@ jQuery(document).ready(function($){
                 type			: 'POST',
                 dataType		: 'text',
                 'newrg' 		: newrg,
-				wp_jv_rg_nonce	: wp_jv_obj.wp_jv_rg_nonce
+				wp_jv_rg_nonce	: wp_jv_prg_obj.wp_jv_rg_nonce
             };		
 		
 		$.post(ajaxurl, data, function(response){
@@ -145,11 +145,11 @@ jQuery(document).ready(function($){
 			if ( response.error ) {				
 				alert(response.error_msg+'\n\n[Error: '+response.error_code+']');								
 				//to debug uncomment the following line
-				//alert('Action: '+response.action+'\nItem: '+ response.rg+'\njv_nonce: '+response.jv_nonce);
+				//alert('Action: '+response.action+'\nItem: '+ response.rg+'\njv_prg_nonce: '+response.jv_prg_nonce);
 			}
 			else {
 			    //to debug uncomment the following line
-				//alert('Action: '+response.action+'\nItem: '+ response.rg+'\njv_nonce: '+response.jv_nonce);
+				//alert('Action: '+response.action+'\nItem: '+ response.rg+'\njv_prg_nonce: '+response.jv_prg_nonce);
 				
 				//If saving was successful then refresh WP_JV_PRG_List_Table			
 				RefreshRGList();				

@@ -1,10 +1,10 @@
 ﻿=== WP JV Post Reading Groups ===
-Contributors: janosver
+Contributors: Janos Ver
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92QJY4PGGA&lc=HU&item_name=WP%20JV%20Post%20Reading%20Groups%20%2d%20Plugin%20Donation&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
-Tested up to: 4.0
-Stable tag: 1.2
+Tested up to: 4.1
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,6 +79,13 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 
 == Changelog ==
 
+= 1.3 =
+* Fix issue: When user clicked on a URL of a private post multiple posts were shown
+* Fix issue: Private posts can't be distinguished on all posts admin screens
+* Fix issue: Private posts for which a user has got access does not appear in recent posts list
+* Small fixes to improve compatibility with other plugins
+* Tested with WordPress 4.1
+
 = 1.2 =
 * Fix issue: WP DB prefix to run on any instance
 
@@ -99,3 +106,13 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 * Fix issue: click on a private post resulted in HTTP 404
 * Fix issue: private posts where not included in recent posts widget
 * Fix issue: "Private:" text from title was not excluded properly for languages other than English
+
+= 1.2 =
+* Fix issue: WP DB prefix to run on any instance
+
+= 1.3 =
+* Fix issue: When user clicked on a URL of a private post multiple posts were shown
+* Fix issue: Private posts can't be distinguished on all posts admin screens
+* Fix issue: Private posts for which a user has got access does not appear in recent posts list
+* Small fixes to improve compatibility with other plugins
+* Tested with WordPress 4.1
