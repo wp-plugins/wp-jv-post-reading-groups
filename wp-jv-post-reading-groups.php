@@ -3,7 +3,7 @@
  * Plugin Name: WP JV Post Reading Groups
  * Plugin URI: http://janosver.com/projects/wordpress/wp-jv-post-reading-groups
  * Description: Grant read-only permission for selected users (with no administrator role) on selected private posts 
- * Version: 1.3
+ * Version: 1.4
  * Author: Janos Ver 
  * Author URI: http://janosver.com
  * License: GPLv2 or later
@@ -18,13 +18,13 @@ if(!defined('ABSPATH')) {
 /************************************************************************************************************/ 
 /* Adds a Reading Groups metabox to Edit Post screen */
 /************************************************************************************************************/
-function AddRGMetaBoxHead() {
-	add_meta_box('wp_jv_prg_sectionid',__( 'WP JV Reading Groups', 'wp_jv_prg_textdomain' ),'AddRGMetaBox',	'post','side','high');
+function wp_jv_prg_add_rg_meta_box_head() {
+	add_meta_box('wp_jv_prg_sectionid',__( 'WP JV Reading Groups', 'wp_jv_prg_textdomain' ),'wp_jv_prg_add_rg_meta_box', 'post','side','high');
 }
-add_action( 'add_meta_boxes', 'AddRGMetaBoxHead' );
+add_action( 'add_meta_boxes', 'wp_jv_prg_add_rg_meta_box_head' );
 
 //Prints the box content
-function AddRGMetaBox( $post ) {
+function wp_jv_prg_add_rg_meta_box( $post ) {
 
 	// Add an nonce field so we can check for it later
 	wp_nonce_field( 'wp_jv_prg_meta_box', 'wp_jv_prg_meta_box_nonce' );
@@ -48,7 +48,7 @@ function AddRGMetaBox( $post ) {
 }
 
 //When the post is saved, saves our custom data
-function SaveRGMetaBox( $post_id ) {
+function wp_jv_prg_save_rg_meta_box( $post_id ) {
 
 	// Verify this came from our screen and with proper authorization
 
@@ -83,7 +83,7 @@ function SaveRGMetaBox( $post_id ) {
 	// Update reading groups custom field in the database.
 	update_post_meta( $post_id, 'wp_jv_post_rg', $NewRG );	
 }
-add_action( 'save_post', 'SaveRGMetaBox' );
+add_action( 'save_post', 'wp_jv_prg_save_rg_meta_box' );
 
 
 /************************************************************************************************************/
@@ -98,12 +98,11 @@ if( ! class_exists( 'WP_List_Table' ) ) {
 /*Start class WP_JV_PRG_List_Table*/
 class WP_JV_PRG_List_Table extends WP_List_Table {
 
-	function __construct(){
-		global $status, $page;
-		parent::__construct( array(
+	function __construct( $args = array() ){		
+		$args = wp_parse_args($args,  array(
 			'singular'  => __( 'Reading Group' ),     //singular name of the listed records
 			'plural'    => __( 'Reading Groups' ),   //plural name of the listed records
-			'ajax'      => true        				
+			'ajax'      => false
 			));			
 	}
 	
@@ -139,6 +138,10 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 		//Leave it empty to remove tablenav
 	}
 	
+	function bulk_actions($which = ''){		
+		//
+	}
+
 	//Refresh table with AJAX (no page refresh)
 	function ajax_response() {	
 		$this->prepare_items();		 	
@@ -168,13 +171,12 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 			);				
 		return sprintf('%1$s %2$s %3$s', $renamediv, $itemdiv, $this->row_actions( $actions ));			
 	}
-		
 } 
 /*End class WP_JV_PRG_List_Table*/
 
 
 //Initialize js methods
-function JVPRGLoadJSMethods() {
+function wp_jv_prg_load_js_methods() {
    wp_register_script( 'wp_jv_prg_script', plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.js', array('jquery') );
    wp_register_style( 'wp_jv_rg_styles',plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.css');
    //Make sure we can use jQuery
@@ -188,20 +190,19 @@ function JVPRGLoadJSMethods() {
    $nonce_array = array( 'wp_jv_rg_nonce' =>  wp_create_nonce ('wp_jv_rg_nonce') );
    wp_localize_script( 'wp_jv_prg_script', 'wp_jv_prg_obj', $nonce_array );
 }
-add_action( 'init', 'JVPRGLoadJSMethods' );
+add_action( 'init', 'wp_jv_prg_load_js_methods' );
 
 
 //Refresh WP-List-Table (AJAX call handler)
-function RefreshRGList() {	
+function wp_jv_prg_refresh_rg_list() {	
 	$wp_jv_prg_reading_groups_table = new WP_JV_PRG_List_Table();	
 	$wp_jv_prg_reading_groups_table->ajax_response();		
 }
-add_action('wp_ajax_RefreshRGList', 'RefreshRGList');
+add_action('wp_ajax_wp_jv_prg_refresh_rg_list', 'wp_jv_prg_refresh_rg_list');
 
 
-//Add new Reading Group to database (AJAX call handler)
-function AddNewRGtoDB() {		
-    
+//Add new Reading Group to database (AJAX call handler)    
+function wp_jv_prg_add_new_rg_to_db() {		    
    //Avoid being easily hacked
 	if (!isset($_POST['wp_jv_rg_nonce']) || !wp_verify_nonce($_POST['wp_jv_rg_nonce'],'wp_jv_rg_nonce')) {
 		$result=array('error'	   => true,
@@ -245,12 +246,13 @@ function AddNewRGtoDB() {
 	header('Content-Type: application/json');
 	die(json_encode($result));	
 }
-add_action('wp_ajax_AddNewRGtoDB','AddNewRGtoDB');
+add_action('wp_ajax_wp_jv_prg_add_new_rg_to_db','wp_jv_prg_add_new_rg_to_db');
 
 
 
 //Rename existing Reading Group in database (AJAX call handler)
-function SaveRenamedRGtoDB() {		
+//SaveRenamedRGtoDB
+function wp_jv_prg_save_renamed_rg_to_db() {		
     //RGToRename = Existing RG ID
 	//NewRGName = New RG name
 	
@@ -299,11 +301,11 @@ function SaveRenamedRGtoDB() {
 	header('Content-Type: application/json');
 	die(json_encode($result));	
 }
-add_action('wp_ajax_SaveRenamedRGtoDB','SaveRenamedRGtoDB');
+add_action('wp_ajax_wp_jv_prg_save_renamed_rg_to_db','wp_jv_prg_save_renamed_rg_to_db');
 
 
 //Delete row (AJAX call handler)
-function DeleteRG() {		
+function wp_jv_prg_delete_rg() {		
     //Check if we are getting hacked
 	$url=parse_url($_POST['delurl']);
 	parse_str($url['query'],$params);
@@ -363,20 +365,20 @@ function DeleteRG() {
 	die(json_encode($result));
 	
 }
-add_action('wp_ajax_DeleteRG', 'DeleteRG');
+add_action('wp_ajax_wp_jv_prg_delete_rg', 'wp_jv_prg_delete_rg');
 
 
 //Adding settings to Settings->Reading
-function AddRGtoSettingsReading() {
-	add_settings_section('wp_jv_prg_rg_settings','WP JV Post Reading Groups','PRGSettings','reading');
+function wp_jv_prg_add_rg_to_settings_reading() {
+	add_settings_section('wp_jv_prg_rg_settings','WP JV Post Reading Groups','wp_jv_prg_settings','reading');
 	
 	add_option('wp_jv_prg_rg_settings',array());
 }
-add_action( 'admin_init', 'AddRGtoSettingsReading' );
+add_action( 'admin_init', 'wp_jv_prg_add_rg_to_settings_reading' );
 
 
 //WP JV Post Reading Groups Settings section intro text
-function PRGSettings() {  	
+function wp_jv_prg_settings() {  	
 	//Wrapper
 	echo '<div class="jv-wrapper">';		
 	
@@ -413,7 +415,7 @@ function PRGSettings() {
 //Add Reading Groups to User's Profile screen
 /************************************************************************************************************/
 
-function RGUserProfile($user) {  	
+function wp_jv_prg_user_profile($user) {  	
 
 	//Only admins can see these options
 	if ( !current_user_can( 'edit_users' ) ) { return; }
@@ -432,29 +434,29 @@ function RGUserProfile($user) {
 		if ( user_can($user->ID, 'edit_users' ) ) { 
 			echo 'Administrators access all posts.<br>'; 			
 		}	
-		else {		
-			echo 'Grant permissions for the following Reading Group(s)<br>';
-			
-			//Get all available RGs from database
-			$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
-			
-			$wp_jv_user_rg=null;			
-			//Get current user's permissions				
-			if (!empty($user->ID)) {
-				$wp_jv_user_rg=get_user_meta($user->ID, 'wp_jv_user_rg',true);
-			}
-
-			//Echo checkboxes and tick saved selections	
-			if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
-			else {
-				foreach ($wp_jv_prg_rg_settings as $key => $value) {	
-					echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
-					if (!empty($wp_jv_user_rg) && in_array($key, $wp_jv_user_rg,true)) { echo 'checked="checked"';} 
-					echo '/>'. $wp_jv_prg_rg_settings[$key]. '<br>';
-					}
-				}	
-		}
 	}
+			
+	echo 'Grant permissions for the following Reading Group(s)<br>';
+	
+	//Get all available RGs from database
+	$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
+	
+	$wp_jv_user_rg=null;			
+	//Get current user's permissions				
+	if (!empty($user->ID)) {
+		$wp_jv_user_rg=get_user_meta($user->ID, 'wp_jv_user_rg',true);
+	}
+	
+	//Echo checkboxes and tick saved selections	
+	if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
+	else {
+		foreach ($wp_jv_prg_rg_settings as $key => $value) {					
+			echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
+			if (!empty($wp_jv_user_rg) && in_array($key, $wp_jv_user_rg,true)) { echo 'checked="checked"';} 
+			echo '/>'. $wp_jv_prg_rg_settings[$key]. '<br>';
+			}
+		}			
+	
 	echo '</div>'; //jv-content end
 
 	//no footer this time			
@@ -464,12 +466,12 @@ function RGUserProfile($user) {
 	echo '</div>'; //jv-wrapper end	
 	
 }
-add_action( 'show_user_profile', 'RGUserProfile' );
-add_action( 'edit_user_profile', 'RGUserProfile' );
+add_action( 'show_user_profile', 'wp_jv_prg_user_profile' );
+add_action( 'edit_user_profile', 'wp_jv_prg_user_profile' );
 
 
 //Save Profile settings
-function SaveRGUserProfile( $user_id ) {
+function wp_jv_prg_save_user_profile( $user_id ) {
 	//Only admins can save
 	if ( !current_user_can( 'edit_users', $user_id ) ) { return; }
 	
@@ -490,28 +492,28 @@ function SaveRGUserProfile( $user_id ) {
 		if ( get_user_meta($user_id,  'wp_jv_user_rg', true ) != $newRG ) {	wp_die('Something went wrong.<br>[Error: F-05] ');}		
 	}
 }
-add_action( 'personal_options_update', 'SaveRGUserProfile' );
-add_action( 'edit_user_profile_update', 'SaveRGUserProfile' );
+add_action( 'personal_options_update', 'wp_jv_prg_save_user_profile' );
+add_action( 'edit_user_profile_update', 'wp_jv_prg_save_user_profile' );
 
 
 /************************************************************************************************************/
 /* Add Reading Groups to Add New User screen */
 /************************************************************************************************************/
-add_action('user_new_form','RGUserProfile');
-add_action('user_register','SaveRGUserProfile');
+add_action('user_new_form','wp_jv_prg_user_profile');
+add_action('user_register','wp_jv_prg_save_user_profile');
 
 /************************************************************************************************************/
 /* Add Reading Groups to All Users screen */
 /************************************************************************************************************/
 
 //Add column
-function AllUsersColumnRegisterRG( $columns ) {
+function wp_jv_prg_all_users_column_register( $columns ) {
     $columns['wp_jv_prg'] = 'Reading Groups';
     return $columns;
 }
 
 //Add rows
-function AllUsersColumnRGRows( $empty, $column_name, $user_id ) {
+function wp_jv_prg_all_users_column_rows( $empty, $column_name, $user_id ) {
     $rg=null;
 	if ( 'wp_jv_prg' != $column_name ) {
         return $empty;
@@ -531,21 +533,21 @@ function AllUsersColumnRGRows( $empty, $column_name, $user_id ) {
 	}
     return $rg;	
 }
-add_filter( 'manage_users_columns', 'AllUsersColumnRegisterRG' );
-add_filter( 'manage_users_custom_column', 'AllUsersColumnRGRows', 10, 3 );
+add_filter( 'manage_users_columns', 'wp_jv_prg_all_users_column_register' );
+add_filter( 'manage_users_custom_column', 'wp_jv_prg_all_users_column_rows', 10, 3 );
 
 /************************************************************************************************************/
 //Add Reading Groups to All Posts screen
 /************************************************************************************************************/
 
 //Add column
-function AllPostsColumnRegisterRG( $columns ) {
+function wp_jv_prg_all_posts_column_register( $columns ) {
     $columns['wp_jv_prg'] = 'Reading Groups';
     return $columns;
 }
 
 //Add rows
-function AllPostsColumnRGRows($column_name , $post_id ) {
+function wp_jv_prg_all_posts_column_rows($column_name, $post_id ) {
     if ( 'wp_jv_prg' != $column_name ) {
         return;
 	}
@@ -560,8 +562,8 @@ function AllPostsColumnRGRows($column_name , $post_id ) {
 	}	
     echo $rg;	
 }
-add_filter( 'manage_posts_columns', 'AllPostsColumnRegisterRG' );
-add_filter( 'manage_posts_custom_column', 'AllPostsColumnRGRows', 10, 2 );
+add_filter( 'manage_posts_columns', 'wp_jv_prg_all_posts_column_register' );
+add_filter( 'manage_posts_custom_column', 'wp_jv_prg_all_posts_column_rows', 10, 2 );
 
 
 /************************************************************************************************************/
@@ -576,6 +578,7 @@ function wp_jv_prg_posts_where_statement($where) {
 	if (is_page()) {return $where;}
 	if (is_feed()) {return $where;}
 	if (is_attachment()) {return $where;}
+	if (is_preview()) {return $where;}
 	
 	if (is_admin()){			
 		return $where;
@@ -720,10 +723,10 @@ function wp_jv_prg_user_can_see_a_post($user_id, $post_id) {
 
 
 //Remove 'Private:' text from title
-function RemovePrivateFromTitle($title){
+function wp_jv_prg_remove_private_from_title($title){
 	return str_replace( sprintf( __('Private: %s'), '' ), '', $title );
 }
-add_filter('the_title', 'RemovePrivateFromTitle');
+add_filter('the_title', 'wp_jv_prg_remove_private_from_title');
 
 
 

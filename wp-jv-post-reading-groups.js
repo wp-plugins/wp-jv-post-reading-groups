@@ -1,17 +1,18 @@
 /*
 // Scripts for WP JV Post Reading Groups
-// @version: 1.3
+// @version: 1.4
 */
 
 jQuery(document).ready(function($){
 	/************************************************************************************************************/
 	/* Refresh WP_JV_PRG_List_Table whenever a change occur */
 	/************************************************************************************************************/
-	function RefreshRGList() {	
+	function wp_jv_prg_refresh_rg_list() {	
+		
 		data = {
-				action	: 'RefreshRGList',
-				url		: ajaxurl,
-				type	: 'POST'
+				action		: 'wp_jv_prg_refresh_rg_list',
+				url			: ajaxurl,
+				type		: 'POST'								
 			};
 		$.post(ajaxurl, data, function(response){				
 			// WP_JV_PRG_List_Table::ajax_response() returns json
@@ -26,7 +27,7 @@ jQuery(document).ready(function($){
 	/************************************************************************************************************/
 	/* Add new RG */
 	/************************************************************************************************************/
-    $('#btnAddNewRG').click(function(){
+    $('#btnAddNewRG').click(function(){		
 		//Disable button and show loading icon		
 		$('#btnAddNewRG').attr('disabled', true);
 		$('#spnAddRG').show();		
@@ -34,8 +35,8 @@ jQuery(document).ready(function($){
 		var newrg = document.getElementById("jv-new-reading-group-text").value; 		
 		
 		//Save new Reading Group to database
-		data = {
-                action			: 'AddNewRGtoDB',
+		data = {                
+				action			: 'wp_jv_prg_add_new_rg_to_db',
                 url				: ajaxurl,
                 type			: 'POST',
                 dataType		: 'text',
@@ -54,7 +55,7 @@ jQuery(document).ready(function($){
 				//alert('Action: '+response.action+'\nNewRGName: '+ response.newRG);
 
 				//If saving was successful then refresh WP_JV_PRG_List_Table
-				RefreshRGList();			   
+				wp_jv_prg_refresh_rg_list();			   
 			}			
 		});	
 		//Disable loading icon and enable button
@@ -72,7 +73,7 @@ jQuery(document).ready(function($){
 		
 		//Clean up any other open Edit input - no save
 		$.ajaxSetup({async:false});
-		RefreshRGList();		
+		wp_jv_prg_refresh_rg_list();		
 		$.ajaxSetup({async:true});
 		
 		//Find out which RG we need to edit
@@ -88,7 +89,7 @@ jQuery(document).ready(function($){
 	//Edit RG - Cancel button pressed
 	$('.btnCancel').live('click',function(event){
 		event.preventDefault();
-		RefreshRGList();
+		wp_jv_prg_refresh_rg_list();
 	});
 	
 	//Edit RG - Save button pressed
@@ -103,7 +104,7 @@ jQuery(document).ready(function($){
 		
 		//Save new Reading Group to database
 		data = {
-                action			: 'SaveRenamedRGtoDB',
+                action			: 'wp_jv_prg_save_renamed_rg_to_db',
                 url				: ajaxurl,
                 type			: 'POST',
                 dataType		: 'text',
@@ -122,7 +123,7 @@ jQuery(document).ready(function($){
 				//alert('Action: '+response.action+'\nRGToRename: '+ response.RGToRename+'\nNewRGName: '+ response.NewRGName);
 				
 				//If saving was successful then refresh WP_JV_PRG_List_Table				
-				RefreshRGList();			   
+				wp_jv_prg_refresh_rg_list();			   
 			}			
 		});	
 		//enable button	
@@ -136,7 +137,7 @@ jQuery(document).ready(function($){
 		event.preventDefault();		
 		var delurl = jQuery(this).attr('href');				
 		data = {
-				action 		: 'DeleteRG',
+				action 		: 'wp_jv_prg_delete_rg',
 				url			: ajaxurl,
 				type		: 'POST',
 				'delurl'	: delurl
@@ -152,7 +153,7 @@ jQuery(document).ready(function($){
 				//alert('Action: '+response.action+'\nItem: '+ response.rg+'\njv_prg_nonce: '+response.jv_prg_nonce);
 				
 				//If saving was successful then refresh WP_JV_PRG_List_Table			
-				RefreshRGList();				
+				wp_jv_prg_refresh_rg_list();				
 				}
 			
 		});

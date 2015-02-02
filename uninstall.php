@@ -3,7 +3,7 @@
  * Remove settings on plugin delete.
  *
  * WP JV Post Reading Groups Settings Uninstaller
- * @version 1.3
+ * @version 1.4
  */
 
 if(!defined('WP_UNINSTALL_PLUGIN')) {

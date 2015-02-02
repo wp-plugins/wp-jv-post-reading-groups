@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
 Tested up to: 4.1
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,10 +79,15 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 
 == Changelog ==
 
+= 1.4 =
+* Fix issue: post preview resulted in HTTP 404
+* Fix issue: list of post reading groups was missing on add new user screen
+* Other small fixes to improve compatibility with other plugins
+
 = 1.3 =
-* Fix issue: When user clicked on a URL of a private post multiple posts were shown
-* Fix issue: Private posts can't be distinguished on all posts admin screens
-* Fix issue: Private posts for which a user has got access does not appear in recent posts list
+* Fix issue: when user clicked on a URL of a private post multiple posts were shown
+* Fix issue: private posts can't be distinguished on all posts admin screens
+* Fix issue: private posts for which a user has got access does not appear in recent posts list
 * Small fixes to improve compatibility with other plugins
 * Tested with WordPress 4.1
 
@@ -111,8 +116,13 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 * Fix issue: WP DB prefix to run on any instance
 
 = 1.3 =
-* Fix issue: When user clicked on a URL of a private post multiple posts were shown
-* Fix issue: Private posts can't be distinguished on all posts admin screens
-* Fix issue: Private posts for which a user has got access does not appear in recent posts list
+* Fix issue: when user clicked on a URL of a private post multiple posts were shown
+* Fix issue: private posts can't be distinguished on all posts admin screens
+* Fix issue: private posts for which a user has got access does not appear in recent posts list
 * Small fixes to improve compatibility with other plugins
 * Tested with WordPress 4.1
+
+= 1.4 =
+* Fix issue: post preview resulted in HTTP 404
+* Fix issue: list of post reading groups was missing on add new user screen
+* Other small fixes to improve compatibility with other plugins
