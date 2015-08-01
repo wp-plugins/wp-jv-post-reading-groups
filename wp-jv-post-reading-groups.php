@@ -3,7 +3,7 @@
  * Plugin Name: WP JV Post Reading Groups
  * Plugin URI: http://janosver.com/projects/wordpress/wp-jv-post-reading-groups
  * Description: Grant read-only permission for selected users (with no administrator role) on selected private posts 
- * Version: 1.4
+ * Version: 1.5
  * Author: Janos Ver 
  * Author URI: http://janosver.com
  * License: GPLv2 or later
@@ -19,7 +19,7 @@ if(!defined('ABSPATH')) {
 /* Adds a Reading Groups metabox to Edit Post screen */
 /************************************************************************************************************/
 function wp_jv_prg_add_rg_meta_box_head() {
-	add_meta_box('wp_jv_prg_sectionid',__( 'WP JV Reading Groups', 'wp_jv_prg_textdomain' ),'wp_jv_prg_add_rg_meta_box', 'post','side','high');
+	add_meta_box('wp_jv_prg_sectionid','WP JV Reading Groups','wp_jv_prg_add_rg_meta_box', 'post','side','high');
 }
 add_action( 'add_meta_boxes', 'wp_jv_prg_add_rg_meta_box_head' );
 
@@ -35,9 +35,15 @@ function wp_jv_prg_add_rg_meta_box( $post ) {
 	$wp_jv_post_rg=get_post_meta($post->ID, 'wp_jv_post_rg',true);
 	
 	//Echo checkboxes and tick saved selections	
-	if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
+	if (empty($wp_jv_prg_rg_settings)) {
+		echo __('Create some groups first at','wp-jv-post-reading-groups');
+		echo ' <a href="options-reading.php">';
+		echo __('Settings -> Reading','wp-jv-post-reading-groups');
+		echo '</a>';
+	} 
 	else {
-	     _e( 'Select who can read this post<br>', 'wp_jv_prg_textdomain');
+	     echo __( 'Select who can read this post', 'wp-jv-post-reading-groups');
+		 echo '<br>';
 		 
 		foreach ($wp_jv_prg_rg_settings as $key => $value) {	
 			echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '" ';
@@ -100,14 +106,14 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 
 	function __construct( $args = array() ){		
 		$args = wp_parse_args($args,  array(
-			'singular'  => __( 'Reading Group' ),     //singular name of the listed records
-			'plural'    => __( 'Reading Groups' ),   //plural name of the listed records
+			'singular'  => __( 'Reading Group','wp-jv-post-reading-groups'),     //singular name of the listed records
+			'plural'    => __( 'Reading Groups','wp-jv-post-reading-groups' ),   //plural name of the listed records
 			'ajax'      => false
 			));			
 	}
 	
 	function get_columns(){
-		$columns = array('reading_group' => 'Reading Group');
+		$columns = array('reading_group' => __('Reading Group','wp-jv-post-reading-groups'));
 		return $columns;
 	}
 	
@@ -165,9 +171,19 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 		$actions = array(
 			//Hidden input box				
 			//Edit link
-			'edit'		=> sprintf('<a class="lnkEdit" data-RG="'. $ItemKey. '" href="'. wp_nonce_url( admin_url('options-reading.php?action=edit&rg='. $ItemKey),'edit'. $ItemKey,'jv_prg_nonce'). '">Rename</a>'),				
+			'edit'		=> sprintf('<a class="lnkEdit" data-RG="'. 
+			$ItemKey. 
+			'" href="'. 
+			wp_nonce_url( admin_url('options-reading.php?action=edit&rg='. $ItemKey),'edit'. $ItemKey,'jv_prg_nonce')
+			. '">'.
+			__('Rename','wp-jv-post-reading-groups').
+			'</a>'),
 			//Delete link
-			'delete'		=> sprintf('<a class="lnkDelete" href="'. wp_nonce_url( admin_url('options-reading.php?action=delete&rg='. $ItemKey),'delete'. $ItemKey,'jv_prg_nonce'). '">Delete</a>')				
+			'delete'		=> sprintf('<a class="lnkDelete" href="'. 
+			wp_nonce_url( admin_url('options-reading.php?action=delete&rg='. $ItemKey),'delete'. $ItemKey,'jv_prg_nonce').
+			'">'.
+			__('Delete','wp-jv-post-reading-groups').
+			'</a>')				
 			);				
 		return sprintf('%1$s %2$s %3$s', $renamediv, $itemdiv, $this->row_actions( $actions ));			
 	}
@@ -177,10 +193,13 @@ class WP_JV_PRG_List_Table extends WP_List_Table {
 
 //Initialize js methods
 function wp_jv_prg_load_js_methods() {
-   wp_register_script( 'wp_jv_prg_script', plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.js', array('jquery') );
+   wp_register_script( 'wp_jv_prg_script', plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.min.js', array('jquery') );
    wp_register_style( 'wp_jv_rg_styles',plugin_dir_url(__FILE__).'wp-jv-post-reading-groups.css');
    //Make sure we can use jQuery
    wp_enqueue_script( 'jquery' );   
+ 
+    //support languages
+   load_plugin_textdomain('wp-jv-post-reading-groups', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
     
    //Load script
    wp_enqueue_script( 'wp_jv_prg_script' );
@@ -226,13 +245,13 @@ function wp_jv_prg_add_new_rg_to_db() {
 				}
 				else {
 					  $result=array('error'	   => true,
-									'error_msg'  => 'Reading Group name "'. $newRG. '"already exists.',
+									'error_msg'  => __('Reading Group name','wp-jv-post-reading-groups').' "'. $newRG. '" '.__('already exists.','wp-jv-post-reading-groups'),
 									'error_code' => 'P-01');			
 				
 					}
 		} else {
 				$result=array('error'	   => true,
-					  'error_msg' => 'Please specify a valid Reading Group name.',
+					  'error_msg' => __('Please specify a valid Reading Group name.','wp-jv-post-reading-groups'),
 					  'error_code' => 'P-02');			
 			}	    		
 	}
@@ -240,9 +259,11 @@ function wp_jv_prg_add_new_rg_to_db() {
 			 		   'error_msg'  => 'Something went wrong',
 					   'error_code' => 'F-02');			
 	//to debug uncomment the following 3 lines	
+	/*
 	$result=array_merge($result,array('action'		=>	'add',
 					'newRG'	=>	sanitize_text_field($_POST['newrg'])
 					));	
+	*/
 	header('Content-Type: application/json');
 	die(json_encode($result));	
 }
@@ -272,19 +293,19 @@ function wp_jv_prg_save_renamed_rg_to_db() {
 					}
 					else {
 							$result=array('error'	   => true,
-										'error_msg'  => 'Reading Group "'. $NewRGName. '" already exists.',
+										'error_msg'  => __('Reading Group','wp-jv-post-reading-groups').' "'. $NewRGName. '" '.__('already exists.','wp-jv-post-reading-groups'),
 										'error_code' => 'P-03');												
 					
 						}
 				}	
 				else {
 						$result=array('error'	   => true,
-									'error_msg'  => 'Reading Group "'. $data[$RGToRename]. '" does not  exists.',
+									'error_msg'  => __('Reading Group','wp-jv-post-reading-groups').' "'. $data[$RGToRename]. '" '.__('does not  exists.','wp-jv-post-reading-groups'),
 									'error_code' => 'P-04');												
 					}
 		} else {
 				$result=array('error'	   => true,
-					  'error_msg'  => 'Please specify a valid Reading Group name.',
+					  'error_msg'  => __('Please specify a valid Reading Group name.','wp-jv-post-reading-groups'),
 					  'error_code' => 'P-05');								  
 			}	    		
 	}
@@ -293,11 +314,12 @@ function wp_jv_prg_save_renamed_rg_to_db() {
 					   'error_code' => 'F-03');			
 					   
 	//to debug uncomment the following 4 lines	
-	//$result=array_merge($result,array('action'		=>	'rename',
-	//				'RGToRename'	=>	$RGToRename,
-	//				'NewRGName'		=>	$NewRGName
-	//				));	
-	
+	/*
+	$result=array_merge($result,array('action'		=>	'rename',
+					'RGToRename'	=>	$RGToRename,
+					'NewRGName'		=>	$NewRGName
+					));	
+	*/
 	header('Content-Type: application/json');
 	die(json_encode($result));	
 }
@@ -315,7 +337,7 @@ function wp_jv_prg_delete_rg() {
 					  'error_code' => 'F-04'
 					);
 		//to debug uncomment the following line
-		$result=array_merge($result,$params);
+		//$result=array_merge($result,$params);
 		header('Content-Type: application/json');
 		die(json_encode($result));
 	}
@@ -360,7 +382,6 @@ function wp_jv_prg_delete_rg() {
 	//to debug uncomment the following line
 	//$result=array_merge($result,$params);       
 	
-	
 	header('Content-Type: application/json');
 	die(json_encode($result));
 	
@@ -384,14 +405,15 @@ function wp_jv_prg_settings() {
 	
 	//Header
 	echo '<div class="jv-header">';
-	echo 'Create your Reading Groups and then assign these to <a href="users.php">users</a>.<br><br>';	
+	echo __('Create your Reading Groups and then assign these to','wp-jv-post-reading-groups').' <a href="users.php">'.__('users','wp-jv-post-reading-groups').'</a>.<br><br>';	
 	echo '</div>'; //jv-header end
 	
 	//Left side: Add new RG functionality
 	echo '<div class="jv-left">';	
-	echo 'Reading Group Name<br>';
+	echo __('Reading Group Name','wp-jv-post-reading-groups');
+	echo '<br>';
     echo '<input type="text" name="new_reading_group" class="jv-new-reading-group-text" id="jv-new-reading-group-text"/><br>';				
-	echo '<input type="button" id="btnAddNewRG" class="button-primary" value="Add New Reading Group" />';
+	echo '<input type="button" id="btnAddNewRG" class="button-primary" value="'.__('Add New Reading Group','wp-jv-post-reading-groups').'" />';
 	//Add loading image - hidden by default
 	echo '<img id="spnAddRG" src="'. admin_url() . '/images/wpspin_light.gif" style="display: none;">';		
 	echo '</div>';//jv-left end
@@ -432,11 +454,11 @@ function wp_jv_prg_user_profile($user) {
 	
 	if (!empty($user->ID)) {
 		if ( user_can($user->ID, 'edit_users' ) ) { 
-			echo 'Administrators access all posts.<br>'; 			
+			echo __('Administrators access all posts.','wp-jv-post-reading-groups').'<br>'; 			
 		}	
 	}
 			
-	echo 'Grant permissions for the following Reading Group(s)<br>';
+	echo __('Grant permissions for the following Reading Group(s)','wp-jv-post-reading-groups').'<br>';
 	
 	//Get all available RGs from database
 	$wp_jv_prg_rg_settings = get_option('wp_jv_prg_rg_settings');
@@ -448,7 +470,12 @@ function wp_jv_prg_user_profile($user) {
 	}
 	
 	//Echo checkboxes and tick saved selections	
-	if (empty($wp_jv_prg_rg_settings)) {_e('Create some groups first at <a href="options-reading.php">Settings -> Reading</a>','wp_jv_prg_textdomain');} 
+	if (empty($wp_jv_prg_rg_settings)) {
+		echo __('Create some groups first at','wp-jv-post-reading-groups');
+		echo ' <a href="options-reading.php">';
+		echo __('Settings -> Reading','wp-jv-post-reading-groups');
+		echo '</a>';
+	}
 	else {
 		foreach ($wp_jv_prg_rg_settings as $key => $value) {					
 			echo '<input type="checkbox" name="wp-jv-reading-group-field-'. $key. '" value="'. $wp_jv_prg_rg_settings[$key]. '"';
@@ -508,7 +535,7 @@ add_action('user_register','wp_jv_prg_save_user_profile');
 
 //Add column
 function wp_jv_prg_all_users_column_register( $columns ) {
-    $columns['wp_jv_prg'] = 'Reading Groups';
+    $columns['wp_jv_prg'] = __('Reading Groups','wp-jv-post-reading-groups');
     return $columns;
 }
 
@@ -518,7 +545,7 @@ function wp_jv_prg_all_users_column_rows( $empty, $column_name, $user_id ) {
 	if ( 'wp_jv_prg' != $column_name ) {
         return $empty;
 	}
-	if (user_can($user_id,'edit_users')) {$rg='Access all RGs';}
+	if (user_can($user_id,'edit_users')) {$rg=__('Access all RGs','wp-jv-post-reading-groups');}
 	else {		
 		$wp_jv_user_rg=get_user_meta($user_id,'wp_jv_user_rg',true);
 		//#TODO: add number of posts per RG
@@ -529,7 +556,6 @@ function wp_jv_prg_all_users_column_rows( $empty, $column_name, $user_id ) {
 				$rg=$rg. $wp_jv_prg_rg_settings[$value]. '<br>';
 			}	
 		}
-		
 	}
     return $rg;	
 }
@@ -542,7 +568,7 @@ add_filter( 'manage_users_custom_column', 'wp_jv_prg_all_users_column_rows', 10,
 
 //Add column
 function wp_jv_prg_all_posts_column_register( $columns ) {
-    $columns['wp_jv_prg'] = 'Reading Groups';
+    $columns['wp_jv_prg'] = __('Reading Groups','wp-jv-post-reading-groups');
     return $columns;
 }
 
@@ -595,9 +621,8 @@ function wp_jv_prg_posts_where_statement($where) {
 				$to_show=array();
 				foreach ($all_posts_in_category as $key => $value) {								
 					if ((wp_jv_prg_user_can_see_a_post(get_current_user_id(), $value->ID))) {
-							$to_show[]=$value->ID;				
-							
-						}	
+						$to_show[]=$value->ID;				
+					}	
 				}
 				if (!empty($to_show)) {
 					$where =" AND $wpdb->posts.post_type = 'post' AND $wpdb->posts.ID IN (". implode(',',$to_show). ")";
@@ -609,7 +634,6 @@ function wp_jv_prg_posts_where_statement($where) {
 				return $where;			
 			}
 			else {return $where;}			
-			
 		}	
 		//Display all to admins
 		if (user_can($who_is_the_user,'edit_users')) {						
@@ -631,8 +655,7 @@ function wp_jv_prg_posts_where_statement($where) {
 		else {							
 			$request = "						
 			SELECT ID, 
-				   meta_value as wp_jv_post_rg, 
-				   true as limited
+				   meta_value as wp_jv_post_rg				   
 			FROM $wpdb->posts, 
 				 $wpdb->postmeta
 			WHERE $wpdb->posts.ID = $wpdb->postmeta.post_id
@@ -691,31 +714,87 @@ function wp_jv_prg_posts_results($posts) {
 }  
 add_filter('posts_results', 'wp_jv_prg_posts_results');
 
+/************************************************************************************************************/
+// Influence how comments are displayed
+//
+// Show comments for private posts if the user is eligible
+/************************************************************************************************************/
+
+add_filter( 'widget_comments_args', 'wp_jv_prg_show_private_comments' );
+function wp_jv_prg_show_private_comments( $comment_args ) {
+	global $wpdb;
+
+	if (is_admin()){			
+		return $comment_args;
+	}
+	$comment_args['status'] = 'approve';
+	if(is_user_logged_in()) {		
+		$who_is_the_user=get_current_user_id(); 
+		//Find out which private posts the user can read
+		$private_posts = "						
+		SELECT ID, 
+			   meta_value as wp_jv_post_rg			   
+		FROM $wpdb->posts, 
+			 $wpdb->postmeta
+		WHERE $wpdb->posts.ID = $wpdb->postmeta.post_id
+		AND post_status='private' AND meta_key='wp_jv_post_rg'";		
+		$all_private_posts = $wpdb->get_results($private_posts);
+		$private_to_show=array();
+		foreach ($all_private_posts as $key => $value) {
+			if ((wp_jv_prg_user_can_see_a_post($who_is_the_user, $value->ID))) {
+				$private_to_show[]=$value->ID;				
+			}	
+		}
+		
+		if (!empty($private_to_show)) { 
+			//If user can access any private we need to find out which are the public ones
+			$public_posts = "						
+			SELECT ID				   
+			FROM $wpdb->posts 
+			WHERE post_status='publish'";		
+			$all_public_posts  = $wpdb->get_results($public_posts );
+			$to_show=$private_to_show; 
+			foreach ($all_public_posts  as $key => $value) {
+				if ((wp_jv_prg_user_can_see_a_post($who_is_the_user, $value->ID))) {
+					$to_show[]=$value->ID;				
+				}	
+			}
+			// we need to list all posts IDs even if those are public
+			$comment_args['post__in'] = $to_show; 
+			$comment_args['post_status'] = array('publish','private');
+		}
+		else $comment_args['post_status'] = array('publish');
+	}
+	return $comment_args;
+}		
+
 //add support for WP JV Custom Email Settings Plugin
 function wp_jv_prg_user_can_see_a_post($user_id, $post_id) {	
 	$user_can_see_a_post=false;
 	//If a post is public then anybody can see it
 	if (get_post_status($post_id)== 'publish') {$user_can_see_a_post=true;}
-	
-	//Display all to admins
-	if (user_can($user_id,'edit_users')) {$user_can_see_a_post=true;}
-	
-	//Get current user and his/her permissions
-	$user_permissions = get_user_meta($user_id,'wp_jv_user_rg',true);
-	if (!is_array($user_permissions)) {
-		$user_permissions=str_split($user_permissions);
-	}
-	//if current user has any kind of permission...				
-	if ($user_permissions) {	
-		$post_permitted=get_post($post_id)->wp_jv_post_rg;
-		//Convert to array if necessary
-		if (!is_array($post_permitted)) { 
-			$post_permitted=str_split($post_permitted);
-		}							
-		//If post permissions set AND current user has appropriate permissions add this post to the list of posts to show				
-		$this_user_can_see_this_post=array_intersect($user_permissions, $post_permitted);
-		if (!empty($user_permissions) && !empty($this_user_can_see_this_post)) {	
-			$user_can_see_a_post=true;
+	else {
+		//Display all to admins
+		if (user_can($user_id,'edit_users')) {$user_can_see_a_post=true;}
+		else {
+			//Get current user and his/her permissions
+			$user_permissions = get_user_meta($user_id,'wp_jv_user_rg',true);
+			if (!is_array($user_permissions)) {
+				$user_permissions=str_split($user_permissions);
+			}
+			//if current user has any kind of permission...				
+			if ($user_permissions) {	
+				$post_permitted=get_post($post_id)->wp_jv_post_rg;
+				//Convert to array if necessary
+				if (!is_array($post_permitted)) { 
+					$post_permitted=str_split($post_permitted);
+				}							
+				//If post permissions set AND current user has appropriate permissions add this post to the list of posts to show				
+				$this_user_can_see_this_post=array_intersect($user_permissions, $post_permitted);
+				if (!empty($user_permissions) && !empty($this_user_can_see_this_post)) {	
+					$user_can_see_a_post=true;
+				}
+			}		
 		}
 	}
 	return $user_can_see_a_post;

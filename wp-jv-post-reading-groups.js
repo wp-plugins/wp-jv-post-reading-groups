@@ -1,6 +1,6 @@
 /*
 // Scripts for WP JV Post Reading Groups
-// @version: 1.4
+// @version: 1.5
 */
 
 jQuery(document).ready(function($){

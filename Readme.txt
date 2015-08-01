@@ -3,8 +3,8 @@ Contributors: janosver
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92QJY4PGGA&lc=HU&item_name=WP%20JV%20Post%20Reading%20Groups%20%2d%20Plugin%20Donation&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
-Tested up to: 4.1
-Stable tag: 1.4
+Tested up to: 4.2.3
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,6 +79,11 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 
 == Changelog ==
 
+= 1.5 =
+* Comments for private posts are now visible in Recent Comments widget (or any other similar) if the user is eligible 
+* Performance improvement by using minified js code
+* Hungarian translation added
+
 = 1.4 =
 * Fix issue: post preview resulted in HTTP 404
 * Fix issue: list of post reading groups was missing on add new user screen
@@ -126,3 +131,8 @@ Go to Posts -> Edit Post and select who will be able to read that post. **Don't 
 * Fix issue: post preview resulted in HTTP 404
 * Fix issue: list of post reading groups was missing on add new user screen
 * Other small fixes to improve compatibility with other plugins
+
+= 1.5 =
+* Comments for private posts are now visible in Recent Comments widget (or any other similar) if the user is eligible 
+* Performance improvement by using minified js code
+* Hungarian translation added
