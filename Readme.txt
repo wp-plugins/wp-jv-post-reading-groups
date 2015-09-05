@@ -3,7 +3,7 @@ Contributors: janosver
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JNF92QJY4PGGA&lc=HU&item_name=WP%20JV%20Post%20Reading%20Groups%20%2d%20Plugin%20Donation&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 Tags: access, login, permission, permissions, post, posts, privacy, private, restrict, simple, user, users
 Requires at least: 3.9.2
-Tested up to: 4.2.3
+Tested up to: 4.3
 Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
